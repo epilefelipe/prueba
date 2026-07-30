@@ -1,0 +1,215 @@
+config:
+  target: "http://localhost:8080"
+  phases:
+    - duration: 10
+      arrivalRate: 1
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+scenarios:
+  - name: "Full ticket lifecycle"
+    flow:
+      # 1. GET /api/tickets - list empty
+      - get:
+          url: "/api/tickets"
+          capture:
+            - json: "$.totalCount"
+              as: totalCount
+
+      # 2. POST /api/tickets - create ticket
+      - post:
+          url: "/api/tickets"
+          json:
+            title: "Test ticket from Artillery"
+            description: "This is a test ticket created by Artillery load testing tool"
+            priority: "High"
+            createdBy: "test@example.com"
+          capture:
+            - json: "$.id"
+              as: ticketId
+            - json: "$.status"
+              as: status
+
+      # 3. GET /api/tickets - list with one ticket
+      - get:
+          url: "/api/tickets"
+          capture:
+            - json: "$.totalCount"
+              as: newTotal
+
+      # 4. GET /api/tickets/{id} - get by id
+      - get:
+          url: "/api/tickets/{{ ticketId }}"
+
+      # 5. PUT /api/tickets/{id} - update ticket
+      - put:
+          url: "/api/tickets/{{ ticketId }}"
+          json:
+            title: "Updated ticket title"
+            description: "This description has been updated by Artillery test"
+            priority: "Critical"
+
+      # 6. PATCH /api/tickets/{id}/status - change to InProgress
+      - patch:
+          url: "/api/tickets/{{ ticketId }}/status"
+          json:
+            status: "InProgress"
+
+      # 7. PATCH /api/tickets/{id}/status - change to Resolved
+      - patch:
+          url: "/api/tickets/{{ ticketId }}/status"
+          json:
+            status: "Resolved"
+
+      # 8. PATCH /api/tickets/{id}/status - change to Closed
+      - patch:
+          url: "/api/tickets/{{ ticketId }}/status"
+          json:
+            status: "Closed"
+
+      # 9. GET /api/tickets/{id} - verify final state
+      - get:
+          url: "/api/tickets/{{ ticketId }}"
+
+  - name: "Comments lifecycle"
+    flow:
+      # Create a ticket first
+      - post:
+          url: "/api/tickets"
+          json:
+            title: "Ticket for comments test"
+            description: "Testing the comments functionality with Artillery"
+            priority: "Low"
+            createdBy: "commenter@example.com"
+          capture:
+            - json: "$.id"
+              as: ticketId
+
+      # 10. POST /api/tickets/{id}/comments - add comment
+      - post:
+          url: "/api/tickets/{{ ticketId }}/comments"
+          json:
+            text: "This is a test comment from Artillery"
+            createdBy: "commenter@example.com"
+          capture:
+            - json: "$.id"
+              as: commentId
+
+      # 11. GET /api/tickets/{id}/comments - list comments
+      - get:
+          url: "/api/tickets/{{ ticketId }}/comments"
+
+      # Add another comment
+      - post:
+          url: "/api/tickets/{{ ticketId }}/comments"
+          json:
+            text: "Second comment for verification"
+            createdBy: "support@example.com"
+
+      # Verify comments count
+      - get:
+          url: "/api/tickets/{{ ticketId }}"
+          capture:
+            - json: "$.commentCount"
+              as: commentCount
+
+  - name: "Filtering and search"
+    flow:
+      # Create tickets with different priorities
+      - post:
+          url: "/api/tickets"
+          json:
+            title: "Critical server issue"
+            description: "Production server is down, need immediate attention"
+            priority: "Critical"
+            createdBy: "ops@example.com"
+
+      - post:
+          url: "/api/tickets"
+          json:
+            title: "Medium feature request"
+            description: "Customer requests new dashboard widget for reports"
+            priority: "Medium"
+            createdBy: "pm@example.com"
+
+      - post:
+          url: "/api/tickets"
+          json:
+            title: "Low priority task"
+            description: "Update documentation for the new API endpoints"
+            priority: "Low"
+            createdBy: "dev@example.com"
+
+      # 12. GET /api/tickets - filter by status
+      - get:
+          url: "/api/tickets?status=Open"
+
+      # 13. GET /api/tickets - filter by priority
+      - get:
+          url: "/api/tickets?priority=Critical"
+
+      # 14. GET /api/tickets - search by text
+      - get:
+          url: "/api/tickets?q=server"
+
+      # 15. GET /api/tickets - filter by status + priority
+      - get:
+          url: "/api/tickets?status=Open&priority=Critical"
+
+      # 16. GET /api/tickets - pagination
+      - get:
+          url: "/api/tickets?page=1&pageSize=2"
+
+      # 17. GET /api/tickets - second page
+      - get:
+          url: "/api/tickets?page=2&pageSize=2"
+
+  - name: "Error handling"
+    flow:
+      # 18. POST /api/tickets - validation error (short title)
+      - post:
+          url: "/api/tickets"
+          json:
+            title: "Hi"
+            description: "Short"
+            priority: "Invalid"
+            createdBy: "not-an-email"
+
+      # 19. GET /api/tickets/{id} - not found
+      - get:
+          url: "/api/tickets/00000000-0000-0000-0000-000000000000"
+
+      # 20. PATCH /api/tickets/{id}/status - invalid transition
+      - post:
+          url: "/api/tickets"
+          json:
+            title: "Ticket for invalid transition test"
+            description: "Testing that Closed -> Open is rejected"
+            priority: "Medium"
+            createdBy: "test@example.com"
+          capture:
+            - json: "$.id"
+              as: ticketId
+
+      # Close it first
+      - patch:
+          url: "/api/tickets/{{ ticketId }}/status"
+          json:
+            status: "InProgress"
+
+      - patch:
+          url: "/api/tickets/{{ ticketId }}/status"
+          json:
+            status: "Resolved"
+
+      - patch:
+          url: "/api/tickets/{{ ticketId }}/status"
+          json:
+            status: "Closed"
+
+      # Try invalid transition back to Open
+      - patch:
+          url: "/api/tickets/{{ ticketId }}/status"
+          json:
+            status: "Open"

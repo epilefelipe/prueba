@@ -1,0 +1,13 @@
+.claude/
+.cache/
+.config/
+.local/
+.npm/
+.pnpm-store/
+node_modules/
+bin/
+obj/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
