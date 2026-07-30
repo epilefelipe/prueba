@@ -4,6 +4,42 @@ using FluentValidation;
 
 namespace TicketManager.API.Middleware
 {
+    public class AuthMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly ILogger<AuthMiddleware> _logger;
+
+        public AuthMiddleware(RequestDelegate next, ILogger<AuthMiddleware> logger)
+        {
+            _next = next;
+            _logger = logger;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            var path = context.Request.Path.Value ?? "";
+            if (context.Request.Method == "OPTIONS" || path.StartsWith("/swagger"))
+            {
+                await _next(context);
+                return;
+            }
+
+            var xUser = context.Request.Headers["X-User"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(xUser))
+            {
+                context.Response.StatusCode = 401;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(
+                    JsonSerializer.Serialize(new { error = "X-User header is required" }));
+                return;
+            }
+
+            context.Items["X-User"] = xUser;
+            _logger.LogDebug("Request by {User} on {Method} {Path}", xUser, context.Request.Method, path);
+            await _next(context);
+        }
+    }
+
     public class ErrorHandlingMiddleware
     {
         private readonly RequestDelegate _next;

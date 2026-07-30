@@ -24,7 +24,7 @@ export default function CreateTicket({ onCreated, onCancel }: Props) {
 
     setSending(true);
     try {
-      await ticketsApi.create({ title, description, priority, createdBy: 'user@example.com' });
+      await ticketsApi.create({ title, description, priority, createdBy: '' });
       onCreated();
     } catch (e: any) {
       setError(e.error || 'Failed to create ticket');

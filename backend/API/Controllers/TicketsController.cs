@@ -38,7 +38,8 @@ namespace TicketManager.API.Controllers
         [HttpPost]
         public async Task<ActionResult<TicketDto>> Create([FromBody] CreateTicketDto dto)
         {
-            var ticket = await _ticketService.CreateAsync(dto);
+            var user = HttpContext.Items["X-User"]?.ToString() ?? dto.CreatedBy;
+            var ticket = await _ticketService.CreateAsync(dto with { CreatedBy = user });
             return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, ticket);
         }
 

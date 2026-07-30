@@ -25,7 +25,8 @@ namespace TicketManager.API.Controllers
         [HttpPost]
         public async Task<ActionResult<CommentDto>> Create(Guid ticketId, [FromBody] CreateCommentDto dto)
         {
-            var comment = await _ticketService.AddCommentAsync(ticketId, dto);
+            var user = HttpContext.Items["X-User"]?.ToString() ?? dto.CreatedBy;
+            var comment = await _ticketService.AddCommentAsync(ticketId, dto with { CreatedBy = user });
             if (comment == null) return NotFound(new { error = $"Ticket with id {ticketId} not found" });
             return CreatedAtAction(nameof(GetComments), new { ticketId }, comment);
         }

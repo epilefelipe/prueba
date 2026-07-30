@@ -1,0 +1,75 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "Ticket Manager API",
+  "createdAt": "2026-07-29",
+  "folders": [
+    {
+      "name": "Tickets",
+      "requests": [
+        {
+          "name": "List Tickets",
+          "method": "GET",
+          "url": "http://localhost:8080/api/tickets?status=&priority=&q=&page=1&pageSize=10",
+          "headers": [{ "name": "X-User", "value": "user@example.com" }]
+        },
+        {
+          "name": "Get Ticket by ID",
+          "method": "GET",
+          "url": "http://localhost:8080/api/tickets/{{ticketId}}",
+          "headers": [{ "name": "X-User", "value": "user@example.com" }]
+        },
+        {
+          "name": "Create Ticket",
+          "method": "POST",
+          "url": "http://localhost:8080/api/tickets",
+          "headers": [{ "name": "X-User", "value": "operator@logistica.com" }],
+          "body": {
+            "type": "json",
+            "raw": "{\n  \"title\": \"Mi ticket de prueba\",\n  \"description\": \"Esta es la descripción del problema de soporte\",\n  \"priority\": \"High\",\n  \"createdBy\": \"\"\n}"
+          }
+        },
+        {
+          "name": "Update Ticket",
+          "method": "PUT",
+          "url": "http://localhost:8080/api/tickets/{{ticketId}}",
+          "headers": [{ "name": "X-User", "value": "user@example.com" }],
+          "body": {
+            "type": "json",
+            "raw": "{\n  \"title\": \"Ticket actualizado\",\n  \"description\": \"Descripción modificada del ticket\",\n  \"priority\": \"Medium\"\n}"
+          }
+        },
+        {
+          "name": "Update Ticket Status",
+          "method": "PATCH",
+          "url": "http://localhost:8080/api/tickets/{{ticketId}}/status",
+          "headers": [{ "name": "X-User", "value": "user@example.com" }],
+          "body": {
+            "type": "json",
+            "raw": "{\n  \"status\": \"InProgress\"\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "requests": [
+        {
+          "name": "List Comments",
+          "method": "GET",
+          "url": "http://localhost:8080/api/tickets/{{ticketId}}/comments",
+          "headers": [{ "name": "X-User", "value": "user@example.com" }]
+        },
+        {
+          "name": "Add Comment",
+          "method": "POST",
+          "url": "http://localhost:8080/api/tickets/{{ticketId}}/comments",
+          "headers": [{ "name": "X-User", "value": "user@example.com" }],
+          "body": {
+            "type": "json",
+            "raw": "{\n  \"text\": \"Este es un comentario de seguimiento\",\n  \"createdBy\": \"\"\n}"
+          }
+        }
+      ]
+    }
+  ]
+}
