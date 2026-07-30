@@ -1,32 +1,32 @@
-using Microsoft.EntityFrameworkCore;
+using System.Data;
+using Dapper;
 using TicketManager.Application.Interfaces;
 using TicketManager.Domain.Entities;
-using TicketManager.Infrastructure.Data;
 
 namespace TicketManager.Infrastructure.Repositories
 {
     public class CommentRepository : ICommentRepository
     {
-        private readonly TicketDbContext _context;
+        private readonly IDbConnection _db;
 
-        public CommentRepository(TicketDbContext context)
+        public CommentRepository(IDbConnection db)
         {
-            _context = context;
+            _db = db;
         }
 
         public async Task<List<Comment>> GetByTicketIdAsync(Guid ticketId)
         {
-            return await _context.Comments
-                .Where(c => c.TicketId == ticketId)
-                .OrderByDescending(c => c.CreatedAt)
-                .ToListAsync();
+            var sql = "SELECT * FROM Comment WHERE TicketId = @TicketId ORDER BY CreatedAt DESC";
+            var comments = await _db.QueryAsync<Comment>(sql, new { TicketId = ticketId });
+            return comments.ToList();
         }
 
         public async Task AddAsync(Comment comment)
         {
-            await _context.Comments.AddAsync(comment);
+            var sql = @"
+                INSERT INTO Comment (Id, TicketId, Text, CreatedAt, CreatedBy)
+                VALUES (@Id, @TicketId, @Text, @CreatedAt, @CreatedBy)";
+            await _db.ExecuteAsync(sql, comment);
         }
-
-        public Task SaveChangesAsync() => _context.SaveChangesAsync();
     }
 }

@@ -4,10 +4,9 @@ namespace TicketManager.Application.Interfaces
 {
     public interface ITicketRepository
     {
-        IQueryable<Ticket> Query();
+        Task<(List<Ticket> Items, int TotalCount)> GetPagedAsync(string? status, string? priority, string? q, int page, int pageSize);
         Task<Ticket?> GetByIdAsync(Guid id);
         Task AddAsync(Ticket ticket);
-        void Update(Ticket ticket);
-        Task SaveChangesAsync();
+        Task UpdateAsync(Ticket ticket);
     }
 }

@@ -39,8 +39,8 @@ public class TicketServiceTests
 
         Ticket? saved = null;
         _ticketRepo.Setup(r => r.AddAsync(It.IsAny<Ticket>()))
-            .Callback<Ticket>(t => saved = t);
-        _ticketRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+            .Callback<Ticket>(t => saved = t)
+            .Returns(Task.CompletedTask);
 
         var result = await _service.CreateAsync(dto);
 
@@ -100,7 +100,7 @@ public class TicketServiceTests
             UpdatedAt = DateTime.UtcNow
         };
         _ticketRepo.Setup(r => r.GetByIdAsync(ticket.Id)).ReturnsAsync(ticket);
-        _ticketRepo.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
+        _ticketRepo.Setup(r => r.UpdateAsync(It.IsAny<Ticket>())).Returns(Task.CompletedTask);
 
         var dto = new UpdateStatusDto("InProgress");
         var result = await _service.UpdateStatusAsync(ticket.Id, dto);

@@ -6,6 +6,5 @@ namespace TicketManager.Application.Interfaces
     {
         Task<List<Comment>> GetByTicketIdAsync(Guid ticketId);
         Task AddAsync(Comment comment);
-        Task SaveChangesAsync();
     }
 }

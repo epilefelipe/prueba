@@ -37,32 +37,14 @@ namespace TicketManager.Application.Services
         public async Task<PagedResult<TicketListItemDto>> GetTicketsAsync(
             string? status, string? priority, string? q, int page = 1, int pageSize = 10)
         {
-            var query = _ticketRepo.Query();
+            var (tickets, totalCount) = await _ticketRepo.GetPagedAsync(status, priority, q, page, pageSize);
 
-            if (!string.IsNullOrWhiteSpace(status))
-                query = query.Where(t => t.Status.ToString() == status);
+            var items = tickets.Select(t => new TicketListItemDto(
+                t.Id, t.Title, t.Priority.ToString(),
+                t.Status.ToString(), t.CreatedAt, t.CreatedBy,
+                t.Comments.Count)).ToList();
 
-            if (!string.IsNullOrWhiteSpace(priority))
-                query = query.Where(t => t.Priority.ToString() == priority);
-
-            if (!string.IsNullOrWhiteSpace(q))
-                query = query.Where(t =>
-                    t.Title.Contains(q) || t.Description.Contains(q));
-
-            query = query.OrderByDescending(t => t.CreatedAt);
-
-            var total = await Task.FromResult(query.Count());
-
-            var items = query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(t => new TicketListItemDto(
-                    t.Id, t.Title, t.Priority.ToString(),
-                    t.Status.ToString(), t.CreatedAt, t.CreatedBy,
-                    t.Comments.Count))
-                .ToList();
-
-            return new PagedResult<TicketListItemDto>(items, total, page, pageSize);
+            return new PagedResult<TicketListItemDto>(items, totalCount, page, pageSize);
         }
 
         public async Task<TicketDto?> GetByIdAsync(Guid id)
@@ -94,7 +76,6 @@ namespace TicketManager.Application.Services
             };
 
             await _ticketRepo.AddAsync(ticket);
-            await _ticketRepo.SaveChangesAsync();
 
             _logger.LogInformation("Ticket {Id} created by {User}", ticket.Id, dto.CreatedBy);
 
@@ -116,8 +97,7 @@ namespace TicketManager.Application.Services
             ticket.Priority = Enum.Parse<Priority>(dto.Priority);
             ticket.UpdatedAt = DateTime.UtcNow;
 
-            _ticketRepo.Update(ticket);
-            await _ticketRepo.SaveChangesAsync();
+            await _ticketRepo.UpdateAsync(ticket);
 
             _logger.LogInformation("Ticket {Id} updated", id);
 
@@ -144,8 +124,7 @@ namespace TicketManager.Application.Services
             ticket.Status = newStatus;
             ticket.UpdatedAt = DateTime.UtcNow;
 
-            _ticketRepo.Update(ticket);
-            await _ticketRepo.SaveChangesAsync();
+            await _ticketRepo.UpdateAsync(ticket);
 
             _logger.LogInformation("Ticket {Id} status changed to {Status}", id, dto.Status);
 
@@ -179,7 +158,6 @@ namespace TicketManager.Application.Services
             };
 
             await _commentRepo.AddAsync(comment);
-            await _commentRepo.SaveChangesAsync();
 
             _logger.LogInformation("Comment added to ticket {TicketId} by {User}", ticketId, dto.CreatedBy);
 
