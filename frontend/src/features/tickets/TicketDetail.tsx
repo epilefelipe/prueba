@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ticketsApi } from '../../api/client';
+import { ticketsApi, X_USER } from '../../api/client';
 import type { Ticket, Comment } from '../../types';
 
 const STATUS_FLOW = ['Open', 'InProgress', 'Resolved', 'Closed'];
@@ -35,7 +35,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
     try {
-      await ticketsApi.addComment(ticketId, { text: newComment, createdBy: 'user@example.com' });
+      await ticketsApi.addComment(ticketId, { text: newComment, createdBy: '' });
       setNewComment('');
       load();
     } catch (e: any) {
@@ -63,7 +63,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
       <button onClick={onBack} style={styles.btn}>← Volver</button>
 
       <h2>{ticket.title}</h2>
-      <div style={styles.meta}>
+      <div className="meta" style={styles.meta}>
         <span style={badge(ticket.priority)}>{P_LABELS[ticket.priority]}</span>
         <span>Estado: {S_LABELS[ticket.status]}</span>
         <span>Creado: {new Date(ticket.createdAt).toLocaleString()}</span>
@@ -71,7 +71,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
       </div>
       <p style={styles.desc}>{ticket.description}</p>
 
-      <div style={styles.statusFlow}>
+      <div className="status-flow" style={styles.statusFlow}>
         {STATUS_FLOW.map((s, i) => (
           <span key={s}>
             <button

@@ -6,6 +6,7 @@ namespace TicketManager.API.Controllers
 {
     [ApiController]
     [Route("api/tickets/{ticketId:guid}/comments")]
+    [Produces("application/json")]
     public class CommentsController : ControllerBase
     {
         private readonly TicketService _ticketService;
@@ -16,6 +17,7 @@ namespace TicketManager.API.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(List<CommentDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<List<CommentDto>>> GetComments(Guid ticketId)
         {
             var comments = await _ticketService.GetCommentsAsync(ticketId);
@@ -23,6 +25,9 @@ namespace TicketManager.API.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(CommentDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<CommentDto>> Create(Guid ticketId, [FromBody] CreateCommentDto dto)
         {
             var user = HttpContext.Items["X-User"]?.ToString() ?? dto.CreatedBy;

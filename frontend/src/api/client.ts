@@ -5,7 +5,7 @@ import type {
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-const X_USER = 'user@example.com';
+export const X_USER = 'user@example.com';
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${url}`, {

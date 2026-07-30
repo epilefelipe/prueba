@@ -55,7 +55,7 @@ export default function CreateTicket({ onCreated, onCancel }: Props) {
 
         {error && <p style={styles.error}>{error}</p>}
 
-        <div style={styles.actions}>
+        <div className="actions" style={styles.actions}>
           <button type="submit" disabled={sending} style={styles.btn}>{sending ? 'Creando...' : 'Crear'}</button>
           <button type="button" onClick={onCancel} style={{ ...styles.btn, background: '#6c757d' }}>Cancelar</button>
         </div>

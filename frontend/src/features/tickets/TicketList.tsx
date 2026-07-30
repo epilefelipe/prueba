@@ -37,7 +37,7 @@ export default function TicketList({ onSelect, onCreate }: Props) {
         <button onClick={onCreate} style={styles.btn}>+ Nuevo Ticket</button>
       </div>
 
-      <div style={styles.filters}>
+      <div className="filters" style={styles.filters}>
         <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }} style={styles.select}>
           {STATUSES.map(s => <option key={s} value={s}>{S_LABELS[s]}</option>)}
         </select>
@@ -57,7 +57,7 @@ export default function TicketList({ onSelect, onCreate }: Props) {
 
       {data && (
         <>
-          <table style={styles.table}>
+          <table className="ticket-table" style={styles.table}>
             <thead>
               <tr>
                 <th>Título</th>
@@ -70,11 +70,11 @@ export default function TicketList({ onSelect, onCreate }: Props) {
             <tbody>
               {data.items.map(t => (
                 <tr key={t.id} onClick={() => onSelect(t.id)} style={styles.row}>
-                  <td>{t.title}</td>
-                  <td><span style={badge(t.priority)}>{P_LABELS[t.priority]}</span></td>
-                  <td>{S_LABELS[t.status]}</td>
-                  <td>{new Date(t.createdAt).toLocaleDateString()}</td>
-                  <td>{t.commentCount}</td>
+                  <td data-label="Título">{t.title}</td>
+                  <td data-label="Prioridad"><span style={badge(t.priority)}>{P_LABELS[t.priority]}</span></td>
+                  <td data-label="Estado">{S_LABELS[t.status]}</td>
+                  <td data-label="Creado">{new Date(t.createdAt).toLocaleDateString()}</td>
+                  <td data-label="Comentarios">{t.commentCount}</td>
                 </tr>
               ))}
               {data.items.length === 0 && (
@@ -83,7 +83,7 @@ export default function TicketList({ onSelect, onCreate }: Props) {
             </tbody>
           </table>
 
-          <div style={styles.pagination}>
+          <div className="pagination" style={styles.pagination}>
             <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} style={styles.btn}>Anterior</button>
             <span>Página {data.page} de {data.totalPages}</span>
             <button disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)} style={styles.btn}>Siguiente</button>
