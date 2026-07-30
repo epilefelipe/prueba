@@ -3,6 +3,8 @@ import { ticketsApi } from '../../api/client';
 import type { Ticket, Comment } from '../../types';
 
 const STATUS_FLOW = ['Open', 'InProgress', 'Resolved', 'Closed'];
+const S_LABELS: Record<string, string> = { Open: 'Abierto', InProgress: 'En Progreso', Resolved: 'Resuelto', Closed: 'Cerrado' };
+const P_LABELS: Record<string, string> = { Low: 'Baja', Medium: 'Media', High: 'Alta', Critical: 'Crítica' };
 
 interface Props {
   ticketId: string;
@@ -24,7 +26,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
       ticketsApi.getComments(ticketId),
     ])
       .then(([t, c]) => { setTicket(t); setComments(c); })
-      .catch(e => setError(e.error || 'Failed to load ticket'))
+      .catch(e => setError(e.error || 'Error al cargar el ticket'))
       .finally(() => setLoading(false));
   };
 
@@ -37,7 +39,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
       setNewComment('');
       load();
     } catch (e: any) {
-      setError(e.error || 'Failed to add comment');
+      setError(e.error || 'Error al añadir comentario');
     }
   };
 
@@ -46,26 +48,26 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
       await ticketsApi.updateStatus(ticketId, { status });
       load();
     } catch (e: any) {
-      setError(e.error || 'Failed to update status');
+      setError(e.error || 'Error al actualizar estado');
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Cargando...</p>;
   if (error) return <p style={{ color: '#dc3545' }}>{error}</p>;
-  if (!ticket) return <p>Ticket not found</p>;
+  if (!ticket) return <p>Ticket no encontrado</p>;
 
   const currentIdx = STATUS_FLOW.indexOf(ticket.status);
 
   return (
     <div style={styles.container}>
-      <button onClick={onBack} style={styles.btn}>← Back</button>
+      <button onClick={onBack} style={styles.btn}>← Volver</button>
 
       <h2>{ticket.title}</h2>
       <div style={styles.meta}>
-        <span style={badge(ticket.priority)}>{ticket.priority}</span>
-        <span>Status: {ticket.status}</span>
-        <span>Created: {new Date(ticket.createdAt).toLocaleString()}</span>
-        <span>By: {ticket.createdBy}</span>
+        <span style={badge(ticket.priority)}>{P_LABELS[ticket.priority]}</span>
+        <span>Estado: {S_LABELS[ticket.status]}</span>
+        <span>Creado: {new Date(ticket.createdAt).toLocaleString()}</span>
+        <span>Por: {ticket.createdBy}</span>
       </div>
       <p style={styles.desc}>{ticket.description}</p>
 
@@ -82,14 +84,14 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
               disabled={i !== currentIdx + 1}
               onClick={() => handleStatusChange(s)}
             >
-              {s}
+              {S_LABELS[s]}
             </button>
             {i < STATUS_FLOW.length - 1 && <span style={{ margin: '0 4px' }}>→</span>}
           </span>
         ))}
       </div>
 
-      <h3>Comments ({comments.length})</h3>
+      <h3>Comentarios ({comments.length})</h3>
       <div style={styles.comments}>
         {comments.map(c => (
           <div key={c.id} style={styles.comment}>
@@ -105,11 +107,11 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
         <textarea
           value={newComment}
           onChange={e => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
+          placeholder="Añadir comentario..."
           rows={3}
           style={styles.textarea}
         />
-        <button onClick={handleAddComment} style={styles.btn} disabled={!newComment.trim()}>Send</button>
+        <button onClick={handleAddComment} style={styles.btn} disabled={!newComment.trim()}>Enviar</button>
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ import type { TicketListItem, PagedResult } from '../../types';
 
 const PRIORITIES = ['', 'Low', 'Medium', 'High', 'Critical'];
 const STATUSES = ['', 'Open', 'InProgress', 'Resolved', 'Closed'];
+const P_LABELS: Record<string, string> = { '': 'Todas', Low: 'Baja', Medium: 'Media', High: 'Alta', Critical: 'Crítica' };
+const S_LABELS: Record<string, string> = { '': 'Todos', Open: 'Abierto', InProgress: 'En Progreso', Resolved: 'Resuelto', Closed: 'Cerrado' };
 
 interface Props {
   onSelect: (id: string) => void;
@@ -24,7 +26,7 @@ export default function TicketList({ onSelect, onCreate }: Props) {
     setError('');
     ticketsApi.list({ status, priority, q: search, page, pageSize: 10 })
       .then(setData)
-      .catch(e => setError(e.error || 'Failed to load tickets'))
+      .catch(e => setError(e.error || 'Error al cargar tickets'))
       .finally(() => setLoading(false));
   }, [status, priority, search, page]);
 
@@ -32,25 +34,25 @@ export default function TicketList({ onSelect, onCreate }: Props) {
     <div style={styles.container}>
       <div style={styles.header}>
         <h2>Tickets</h2>
-        <button onClick={onCreate} style={styles.btn}>+ New Ticket</button>
+        <button onClick={onCreate} style={styles.btn}>+ Nuevo Ticket</button>
       </div>
 
       <div style={styles.filters}>
         <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }} style={styles.select}>
-          {STATUSES.map(s => <option key={s} value={s}>{s || 'All Status'}</option>)}
+          {STATUSES.map(s => <option key={s} value={s}>{S_LABELS[s]}</option>)}
         </select>
         <select value={priority} onChange={e => { setPriority(e.target.value); setPage(1); }} style={styles.select}>
-          {PRIORITIES.map(p => <option key={p} value={p}>{p || 'All Priority'}</option>)}
+          {PRIORITIES.map(p => <option key={p} value={p}>{P_LABELS[p]}</option>)}
         </select>
         <input
-          placeholder="Search..."
+          placeholder="Buscar..."
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
           style={styles.input}
         />
       </div>
 
-      {loading && <p>Loading...</p>}
+      {loading && <p>Cargando...</p>}
       {error && <p style={styles.error}>{error}</p>}
 
       {data && (
@@ -58,33 +60,33 @@ export default function TicketList({ onSelect, onCreate }: Props) {
           <table style={styles.table}>
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Comments</th>
+                <th>Título</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Creado</th>
+                <th>Comentarios</th>
               </tr>
             </thead>
             <tbody>
               {data.items.map(t => (
                 <tr key={t.id} onClick={() => onSelect(t.id)} style={styles.row}>
                   <td>{t.title}</td>
-                  <td><span style={badge(t.priority)}>{t.priority}</span></td>
-                  <td>{t.status}</td>
+                  <td><span style={badge(t.priority)}>{P_LABELS[t.priority]}</span></td>
+                  <td>{S_LABELS[t.status]}</td>
                   <td>{new Date(t.createdAt).toLocaleDateString()}</td>
                   <td>{t.commentCount}</td>
                 </tr>
               ))}
               {data.items.length === 0 && (
-                <tr><td colSpan={5} style={{ textAlign: 'center' }}>No tickets found</td></tr>
+                <tr><td colSpan={5} style={{ textAlign: 'center' }}>No se encontraron tickets</td></tr>
               )}
             </tbody>
           </table>
 
           <div style={styles.pagination}>
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} style={styles.btn}>Prev</button>
-            <span>Page {data.page} of {data.totalPages}</span>
-            <button disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)} style={styles.btn}>Next</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} style={styles.btn}>Anterior</button>
+            <span>Página {data.page} de {data.totalPages}</span>
+            <button disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)} style={styles.btn}>Siguiente</button>
           </div>
         </>
       )}

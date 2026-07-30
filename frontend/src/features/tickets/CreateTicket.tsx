@@ -7,6 +7,7 @@ interface Props {
 }
 
 const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
+const P_LABELS: Record<string, string> = { Low: 'Baja', Medium: 'Media', High: 'Alta', Critical: 'Crítica' };
 
 export default function CreateTicket({ onCreated, onCancel }: Props) {
   const [title, setTitle] = useState('');
@@ -19,15 +20,15 @@ export default function CreateTicket({ onCreated, onCancel }: Props) {
     e.preventDefault();
     setError('');
 
-    if (title.length < 5 || title.length > 120) { setError('Title must be 5-120 characters'); return; }
-    if (description.length < 10 || description.length > 2000) { setError('Description must be 10-2000 characters'); return; }
+    if (title.length < 5 || title.length > 120) { setError('El título debe tener entre 5 y 120 caracteres'); return; }
+    if (description.length < 10 || description.length > 2000) { setError('La descripción debe tener entre 10 y 2000 caracteres'); return; }
 
     setSending(true);
     try {
       await ticketsApi.create({ title, description, priority, createdBy: '' });
       onCreated();
     } catch (e: any) {
-      setError(e.error || 'Failed to create ticket');
+      setError(e.error || 'Error al crear ticket');
     } finally {
       setSending(false);
     }
@@ -35,28 +36,28 @@ export default function CreateTicket({ onCreated, onCancel }: Props) {
 
   return (
     <div style={styles.container}>
-      <h2>Create Ticket</h2>
+      <h2>Crear Ticket</h2>
       <form onSubmit={handleSubmit}>
         <div style={styles.field}>
-          <label>Title</label>
+          <label>Título</label>
           <input value={title} onChange={e => setTitle(e.target.value)} style={styles.input} />
         </div>
         <div style={styles.field}>
-          <label>Description</label>
+          <label>Descripción</label>
           <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} style={styles.textarea} />
         </div>
         <div style={styles.field}>
-          <label>Priority</label>
+          <label>Prioridad</label>
           <select value={priority} onChange={e => setPriority(e.target.value)} style={styles.input}>
-            {PRIORITIES.map(p => <option key={p}>{p}</option>)}
+            {PRIORITIES.map(p => <option key={p} value={p}>{P_LABELS[p]}</option>)}
           </select>
         </div>
 
         {error && <p style={styles.error}>{error}</p>}
 
         <div style={styles.actions}>
-          <button type="submit" disabled={sending} style={styles.btn}>{sending ? 'Creating...' : 'Create'}</button>
-          <button type="button" onClick={onCancel} style={{ ...styles.btn, background: '#6c757d' }}>Cancel</button>
+          <button type="submit" disabled={sending} style={styles.btn}>{sending ? 'Creando...' : 'Crear'}</button>
+          <button type="button" onClick={onCancel} style={{ ...styles.btn, background: '#6c757d' }}>Cancelar</button>
         </div>
       </form>
     </div>
