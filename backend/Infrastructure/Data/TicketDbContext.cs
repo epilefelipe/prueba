@@ -7,11 +7,19 @@ namespace TicketManager.Infrastructure.Data
     {
         public TicketDbContext(DbContextOptions<TicketDbContext> options) : base(options) { }
 
+        public DbSet<User> Users => Set<User>();
         public DbSet<Ticket> Tickets => Set<Ticket>();
         public DbSet<Comment> Comments => Set<Comment>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(100);
+            });
             modelBuilder.Entity<Ticket>(entity =>
             {
                 entity.HasKey(e => e.Id);

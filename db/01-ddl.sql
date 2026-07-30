@@ -9,23 +9,21 @@ CREATE TABLE [User] (
 );
 
 CREATE TABLE Ticket (
-    Id          INT IDENTITY(1,1) PRIMARY KEY,
+    Id          UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     Title       NVARCHAR(120) NOT NULL,
     Description NVARCHAR(2000) NOT NULL,
     Priority    NVARCHAR(20) NOT NULL CHECK (Priority IN ('Low','Medium','High','Critical')),
     Status      NVARCHAR(20) NOT NULL CHECK (Status IN ('Open','InProgress','Resolved','Closed')),
     CreatedAt   DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
     UpdatedAt   DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    CreatedBy   INT NOT NULL,
-    CONSTRAINT FK_Ticket_User FOREIGN KEY (CreatedBy) REFERENCES [User](Id)
+    CreatedBy   NVARCHAR(256) NOT NULL
 );
 
 CREATE TABLE Comment (
-    Id          INT IDENTITY(1,1) PRIMARY KEY,
-    TicketId    INT NOT NULL,
+    Id          UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    TicketId    UNIQUEIDENTIFIER NOT NULL,
     Text        NVARCHAR(1000) NOT NULL,
     CreatedAt   DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-    CreatedBy   INT NOT NULL,
-    CONSTRAINT FK_Comment_Ticket FOREIGN KEY (TicketId) REFERENCES Ticket(Id) ON DELETE CASCADE,
-    CONSTRAINT FK_Comment_User   FOREIGN KEY (CreatedBy) REFERENCES [User](Id)
+    CreatedBy   NVARCHAR(256) NOT NULL,
+    CONSTRAINT FK_Comment_Ticket FOREIGN KEY (TicketId) REFERENCES Ticket(Id) ON DELETE CASCADE
 );

@@ -19,7 +19,7 @@ SELECT t.Id, t.Title, t.Priority, t.Status, t.CreatedAt,
        u.DisplayName AS CreatorName,
        COUNT(c.Id)   AS CommentCount
 FROM Ticket t
-JOIN [User] u ON u.Id = t.CreatedBy
+LEFT JOIN [User] u ON u.Email = t.CreatedBy
 LEFT JOIN Comment c ON c.TicketId = t.Id
 WHERE (@Status IS NULL OR t.Status = @Status)
   AND (@Priority IS NULL OR t.Priority = @Priority)
@@ -33,7 +33,7 @@ SELECT TOP 5
     u.Id, u.Email, u.DisplayName,
     COUNT(t.Id) AS TicketsCreated
 FROM [User] u
-JOIN Ticket t ON t.CreatedBy = u.Id
+JOIN Ticket t ON t.CreatedBy = u.Email
 WHERE t.CreatedAt >= DATEADD(MONTH, -1, SYSUTCDATETIME())
 GROUP BY u.Id, u.Email, u.DisplayName
 ORDER BY TicketsCreated DESC;

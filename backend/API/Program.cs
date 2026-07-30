@@ -46,4 +46,19 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var ctx = scope.ServiceProvider.GetRequiredService<TicketDbContext>();
+    ctx.Database.EnsureCreated();
+    if (!ctx.Users.Any())
+    {
+        ctx.Users.AddRange(
+            new TicketManager.Domain.Entities.User { Email = "user@example.com", DisplayName = "Usuario Demo" },
+            new TicketManager.Domain.Entities.User { Email = "admin@example.com", DisplayName = "Admin" },
+            new TicketManager.Domain.Entities.User { Email = "operator@logistica.com", DisplayName = "Operador Logística" }
+        );
+        ctx.SaveChanges();
+    }
+}
+
 app.Run();
